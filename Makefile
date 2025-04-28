@@ -1,25 +1,20 @@
-NAME = inception
 COMPOSE_FILE = srcs/docker-compose.yml
 DATA_PATH = /home/kaddouri/data
 
-all: setup build up
+all: setup up
 
 setup:
 	@mkdir -p $(DATA_PATH)/wordpress
 	@mkdir -p $(DATA_PATH)/mariadb
 
-build:
-	@docker-compose -f $(COMPOSE_FILE) build
-
 up:
-	@docker-compose -f $(COMPOSE_FILE) up -d
+	@docker-compose -f $(COMPOSE_FILE) up --build -d
 
 down:
 	@docker-compose -f $(COMPOSE_FILE) down
 
 clean: down
 	@docker system prune -a --force
-	@docker volume rm $$(docker volume ls -q) 2>/dev/null || true
 
 fclean: clean
 	@sudo rm -rf $(DATA_PATH)/wordpress/*
@@ -28,4 +23,4 @@ fclean: clean
 re: fclean all
 
 
-.PHONY: all setup build up down stop start restart clean fclean re ps logs
+.PHONY: all setup up down clean fclean re

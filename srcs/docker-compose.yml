@@ -13,19 +13,23 @@ services:
       - wordpress:/var/www/html
     networks:
       - inception
+    env_file:
+      - .env
 
   wordpress:
     build: requirements/wordpress/.
-    container_name: wp-php
+    container_name: wordpress
     restart: always
     depends_on:
       - mariadb
+      - redis
     volumes:
       - wordpress:/var/www/html
     networks:
       - inception
     env_file:
       - .env
+
   mariadb:
     build: requirements/mariadb/.
     container_name: mariadb
@@ -36,6 +40,62 @@ services:
       - inception
     env_file:
       - .env
+
+  redis:
+    build: requirements/bonus/redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - inception
+
+  adminer:
+    build: requirements/bonus/adminer
+    container_name: adminer
+    restart: always
+    networks:
+      - inception
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mariadb
+
+  static_site:
+    build: requirements/bonus/static_site
+    container_name: static_site
+    restart: always
+    networks:
+      - inception
+
+  ftp:
+    build: requirements/bonus/ftp
+    container_name: ftp
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+    restart: always
+    environment:
+      - FTP_USR=${FTP_USR}
+      - FTP_PWD=${FTP_PWD}
+      - PASV_ADDRESS=akaddour.42.fr
+
+  portainer:
+    build: requirements/bonus/portainer
+    container_name: portainer
+    restart: always
+    ports:
+      - "9001:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - inception
+
 
 volumes:
   wordpress:
